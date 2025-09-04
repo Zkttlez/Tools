@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashlight Control Panel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            font-size: 1.2em;
+            color: #333;
+        }
+        #deviceInfo {
+            font-size: 1em;
+            color: #333;
+            max-width: 600px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <p>Flashlight Control Panel</p>
+    <button onclick="sendCommand('ON')">Turn Flashlight ON</button>
+    <button onclick="sendCommand('OFF')">Turn Flashlight OFF</button>
+    <p>Device Info:</p>
+    <pre id="deviceInfo">Waiting for device info...</pre>
+    <script>
+        const socket = io('http://your-server-url:8000');
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('device_info', (info) => {
+            document.getElementById('deviceInfo').textContent = JSON.stringify(info, null, 2);
+        });
+
+        function sendCommand(command) {
+            socket.emit('flashlight_command', command);
+        }
+    </script>
+</body>
+</html>
