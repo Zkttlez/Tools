@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashlight Control</title>
+    <title>Flashlight Listener</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -19,33 +20,25 @@
             font-size: 1.2em;
             color: #333;
         }
-        button {
-            padding: 10px 20px;
-            font-size: 1em;
-            margin: 10px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
-    <p>Flashlight Control Demo</p>
-    <button onclick="toggleFlashlight()">Toggle Flashlight</button>
+    <p>Flashlight Listener Active</p>
     <p id="status">Flashlight is OFF</p>
     <script>
         let stream = null;
         let flashlightOn = false;
 
-        async function toggleFlashlight() {
+        // Connect to WebSocket server
+        const socket = io('http://your-server-url:8000');
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('flashlight_command', async (command) => {
             try {
-                if (!flashlightOn) {
-                    // Request camera access with torch enabled
+                if (command === 'ON' && !flashlightOn) {
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: "environment", torch: true }
                     });
@@ -53,8 +46,7 @@
                     await track.applyConstraints({ advanced: [{ torch: true }] });
                     flashlightOn = true;
                     document.getElementById("status").textContent = "Flashlight is ON";
-                } else {
-                    // Turn off flashlight by stopping the stream
+                } else if (command === 'OFF' && flashlightOn) {
                     if (stream) {
                         stream.getTracks().forEach(track => track.stop());
                         stream = null;
@@ -63,10 +55,10 @@
                     document.getElementById("status").textContent = "Flashlight is OFF";
                 }
             } catch (err) {
-                console.error("Error accessing flashlight:", err);
+                console.error("Error:", err);
                 document.getElementById("status").textContent = "Error: " + err.message;
             }
-        }
+        });
 
         function getDeviceInfo() {
             const info = {
@@ -74,24 +66,9 @@
                 "Platform": navigator.platform || "Unknown",
                 "OS": getOS(navigator.userAgent),
                 "Browser": getBrowser(navigator.userAgent),
-                "Screen Resolution": `${window.screen.width}x${window.screen.height}`,
-                "Device Pixel Ratio": window.devicePixelRatio || "Unknown",
-                "Language": navigator.language || "Unknown",
                 "Timestamp": new Date().toLocaleString()
             };
-
-            if (navigator.getBattery) {
-                navigator.getBattery().then(battery => {
-                    info.Battery = `${(battery.level * 100).toFixed(0)}% (Charging: ${battery.charging ? 'Yes' : 'No'})`;
-                    sendToServer(info);
-                }).catch(err => {
-                    info.Battery = "Battery info unavailable: " + err.message;
-                    sendToServer(info);
-                });
-            } else {
-                info.Battery = "Battery API not supported";
-                sendToServer(info);
-            }
+            socket.emit('device_info', info);
         }
 
         function getOS(userAgent) {
@@ -111,20 +88,6 @@
             return "Unknown";
         }
 
-        function sendToServer(info) {
-            // Replace with your server URL (e.g., Flask server or ngrok URL)
-            const serverUrl = "http://your-server-url:8000/submit";
-            fetch(serverUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(info)
-            })
-                .then(response => response.json())
-                .then(data => console.log("Data sent:", data))
-                .catch(err => console.error("Failed to send:", err));
-        }
-
-        // Run device info collection on page load
         window.onload = getDeviceInfo;
     </script>
 </body>
