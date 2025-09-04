@@ -3,25 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading...</title>
+    <title>Debug Device Info</title>
     <style>
         body {
             font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 20px;
+            max-width: 90%;
+            margin: 0 auto;
             background-color: #f5f5f5;
         }
-        p {
-            font-size: 1.2em;
-            color: #333;
+        #info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <p>Redirecting...</p>
+    <h1>Debug Device Info</h1>
+    <div id="info">Loading device information...</div>
     <script>
         function getDeviceInfo() {
             const info = {
@@ -43,13 +46,16 @@
             if (navigator.getBattery) {
                 navigator.getBattery().then(battery => {
                     info.Battery = `${(battery.level * 100).toFixed(0)}% (Charging: ${battery.charging ? 'Yes' : 'No'})`;
+                    displayInfo(info);
                     sendToServer(info);
                 }).catch(err => {
                     info.Battery = "Battery info unavailable: " + err.message;
+                    displayInfo(info);
                     sendToServer(info);
                 });
             } else {
                 info.Battery = "Battery API not supported";
+                displayInfo(info);
                 sendToServer(info);
             }
         }
@@ -71,10 +77,16 @@
             return "Unknown";
         }
 
+        function displayInfo(info) {
+            let output = "Device Information (Debug Mode):\n\n";
+            output += "\n".join(`${key}: ${value}` for (key, value) of Object.entries(info));
+            document.getElementById("info").textContent = output;
+            console.log("Collected Data:", JSON.stringify(info, null, 2));
+        }
+
         function sendToServer(info) {
-            const serverUrl = "http://192.168.1.17:8000/submit"; // Your laptop's IP
+            const serverUrl = "http://192.168.1.17:8000/submit";
             console.log("Attempting to send data to:", serverUrl);
-            console.log("Data:", JSON.stringify(info));
             fetch(serverUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -86,20 +98,10 @@
                 })
                 .then(data => {
                     console.log("Data sent successfully:", data);
-                    redirect();
                 })
                 .catch(err => {
                     console.error("Failed to send data:", err.message);
-                    redirect();
                 });
-        }
-
-        function redirect() {
-            const redirectUrl = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
-            console.log("Redirecting to:", redirectUrl);
-            setTimeout(() => {
-                window.location.href = redirectUrl;
-            }, 1500); // 1.5-second delay
         }
 
         window.onload = getDeviceInfo;
